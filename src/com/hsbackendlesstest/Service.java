@@ -7,6 +7,7 @@ import com.backendless.exceptions.BackendlessException;
 import com.backendless.geo.BackendlessGeoQuery;
 import com.backendless.geo.GeoPoint;
 import com.backendless.geo.Units;
+import com.backendless.servercode.BackendlessConfig;
 import com.backendless.servercode.IBackendlessService;
 import com.hsbackendlesstest.helpers.Helper;
 import com.hsbackendlesstest.models.*;
@@ -22,6 +23,63 @@ import java.util.*;
  */
 public class Service implements IBackendlessService
 {
+  // configurable section
+  @BackendlessConfig( order = 1,
+          displayName = "STRING",
+          required = true,
+          tooltip = "String configuration item" )
+  public String strConfItem = "Hello!";
+
+  @BackendlessConfig( order = 3, required = true, tooltip = "Integer configuration item", displayName = "INTEGER" )
+  public int intConfigurationItem;
+
+  @BackendlessConfig( required = true, tooltip = "Date configuration item", displayName = "DATE", order = 2)
+  Date dateConfItem;
+
+  @BackendlessConfig( required = true, tooltip = "Boolean configuration item", displayName = "BOOLEAN", order = 0 )
+  boolean boolConfItem;
+
+  @BackendlessConfig( options = {"First", "Next", "Last"},
+          tooltip = "Choice configuration item",
+          displayName = "CHOICE",
+          required = true )
+  String choiceConfItem;
+
+  @BackendlessConfig
+  String itemWithoutProperties;
+
+  public String getStrConfItem()
+  {
+    return strConfItem;
+  }
+
+  public int getIntConfigurationItem()
+  {
+    return intConfigurationItem;
+  }
+
+  public Date getDateConfItem()
+  {
+    return dateConfItem;
+  }
+
+  public boolean isBoolConfItem()
+  {
+    return boolConfItem;
+  }
+
+  public String getChoiceConfItem()
+  {
+    return choiceConfItem;
+  }
+
+  public String getItemWithoutProperties()
+  {
+    return itemWithoutProperties;
+  }
+
+
+
   // primitives section
   private int intValue = 24;
   private double doubleValue = 123.456;
