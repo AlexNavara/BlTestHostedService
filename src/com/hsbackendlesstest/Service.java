@@ -7,10 +7,13 @@ import com.backendless.exceptions.BackendlessException;
 import com.backendless.geo.BackendlessGeoQuery;
 import com.backendless.geo.GeoPoint;
 import com.backendless.geo.Units;
+import com.backendless.persistence.BackendlessDataQuery;
+import com.backendless.persistence.QueryOptions;
 import com.backendless.servercode.BackendlessConfig;
 import com.backendless.servercode.IBackendlessService;
 import com.hsbackendlesstest.helpers.Helper;
 import com.hsbackendlesstest.models.*;
+import sun.java2d.pipe.SpanShapeRenderer;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -163,6 +166,16 @@ public class Service implements IBackendlessService
   public BackendlessUser getFirstUser()
   {
     return Backendless.Data.of( BackendlessUser.class ).findFirst();
+  }
+
+  public BackendlessUser loginUser( final String login, final String password )
+  {
+    return loginUser( login, password, false );
+  }
+
+  public BackendlessUser loginUser( final String login, final String password, final Boolean stayLoggedIn )
+  {
+    return Backendless.UserService.login( login, password, stayLoggedIn );
   }
 
   public BackendlessUser createUser( final BackendlessUser user )
@@ -322,4 +335,63 @@ public class Service implements IBackendlessService
   }
 
   // load section
+  public Map<String,Integer> loadData( int saveQuantity, int findQuantity, int findByIdQuantity, int deleteQuantity ) throws Exception
+  {
+    if ( deleteQuantity > 0 && findQuantity == 0 )
+      throw new Exception( "Cannot invoke deletion without find" );
+
+    if ( findByIdQuantity > 0 && findQuantity == 0 )
+      throw new Exception( "Cannot invoke findById without find" );
+
+    Map<String,Integer> result = new HashMap<>();
+    result.put( "saved", 0 );
+    result.put( "found", 0 );
+    result.put( "foundById", 0 );
+    result.put( "deleted", 0 );
+
+    String whereClause = "objectId LIKE '%A%'";
+    QueryOptions options = new QueryOptions();
+    options.setRelationsDepth( 10 );
+    options.setPageSize( 100 );
+    options.setOffset( 0 );
+    BackendlessDataQuery query = new BackendlessDataQuery( whereClause );
+    query.setQueryOptions( options );
+    BackendlessCollection<SimpleEntity> collection = new BackendlessCollection<>();
+
+    for ( int i = 0; i < saveQuantity; i++ )
+    {
+      Backendless.Data.of( SimpleEntity.class ).save( Helper.createSimpleEntity() );
+      result.put( "saved", result.get( "saved" ) + 1 );
+    }
+
+    for ( int i = 0; i < findQuantity; i++ )
+    {
+      collection = Backendless.Data.of( SimpleEntity.class ).find( query );
+      result.put( "found", result.get( "found" ) + 1 );
+    }
+
+    if ( collection.getTotalObjects() == 0 )
+      throw new Exception( "FindById quantity cannot be called on empty collection" );
+
+    for ( int i = 0; i < findByIdQuantity; i++ )
+    {
+      String id = collection.getCurrentPage().get( new Random().nextInt( collection.getData().size() ) ).getObjectId();
+      Backendless.Data.of( SimpleEntity.class ).findById( id );
+
+      result.put( "foundById", result.get( "foundById" ) + 1 );
+    }
+
+    if ( deleteQuantity > collection.getCurrentPage().size() )
+      throw new Exception( "DeleteQuantity exceeds current page size" );
+
+    Iterator iterator = collection.getCurrentPage().iterator();
+
+    for ( int i = 0; i < deleteQuantity; i++ )
+    {
+      Backendless.Data.of( SimpleEntity.class ).remove( (SimpleEntity) iterator.next() );
+      result.put( "deleted", result.get( "deleted" ) + 1 );
+    }
+
+    return result;
+  }
 }
