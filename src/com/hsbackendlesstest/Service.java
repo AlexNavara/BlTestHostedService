@@ -3,7 +3,9 @@ package com.hsbackendlesstest;
 import com.backendless.Backendless;
 import com.backendless.BackendlessCollection;
 import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessException;
+import com.backendless.exceptions.BackendlessFault;
 import com.backendless.geo.BackendlessGeoQuery;
 import com.backendless.geo.GeoPoint;
 import com.backendless.geo.Units;
@@ -97,7 +99,7 @@ public class Service implements IBackendlessService
 
   public boolean getBool()
   {
-    return true;
+    return booleanValue;
   }
 
   public Object getNull()
@@ -158,6 +160,11 @@ public class Service implements IBackendlessService
   public TestEntity returnIt( TestEntity it )
   {
     return it;
+  }
+
+  public void doSleep( long delay ) throws InterruptedException
+  {
+    Thread.sleep( delay );
   }
 
 
